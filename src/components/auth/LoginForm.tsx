@@ -113,10 +113,10 @@ const LoginForm: React.FC = () => {
       }
 
       setPermissions(prev => ({ ...prev, [permission]: true }));
-      
+
       // Auto-advance to next step after successful permission grant
       setTimeout(() => {
-        if (proctorSetupStep < setupSteps.length) {
+        if (proctorSetupStep <= setupSteps.length) {
           setProctorSetupStep(proctorSetupStep + 1);
         }
       }, 1000);
@@ -130,10 +130,11 @@ const LoginForm: React.FC = () => {
   };
 
   const handleProctorSetupComplete = () => {
-    // Set the proctor user in auth context after setup completion
     if (proctorUser) {
       localStorage.setItem('examglance_user', JSON.stringify(proctorUser));
-      window.location.reload(); // Refresh to update auth state
+      setProctorSetupStep(0);
+      setProctorUser(null);
+      window.location.reload();
     }
   };
 
@@ -142,7 +143,7 @@ const LoginForm: React.FC = () => {
 
   // Show proctor setup if proctor user and setup step > 0
   if (proctorUser && proctorSetupStep > 0) {
-    if (allPermissionsGranted) {
+    if (allPermissionsGranted || proctorSetupStep > setupSteps.length) {
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-6 sm:p-8">
@@ -177,6 +178,10 @@ const LoginForm: React.FC = () => {
       );
     }
 
+    if (!currentStepData) {
+      return null;
+    }
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-6 sm:p-8">
@@ -188,7 +193,7 @@ const LoginForm: React.FC = () => {
 
           {/* Progress Bar */}
           <div className="w-full bg-gray-200 rounded-full h-2 mb-6 sm:mb-8">
-            <div 
+            <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${(proctorSetupStep / setupSteps.length) * 100}%` }}
             ></div>
